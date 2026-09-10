@@ -1,0 +1,372 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: cloudspend
+    description: CloudSpend expense tracking operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /cloudspend/users/{username}:
+    get:
+      operationId: getCloudSpendUser
+      tags: [cloudspend]
+      summary: Get or create a CloudSpend user profile
+      parameters:
+        - $ref: "#/components/parameters/Username"
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudSpendUser"
+  /cloudspend/users/{username}/budget:
+    put:
+      operationId: updateCloudSpendBudget
+      tags: [cloudspend]
+      summary: Update a user's monthly and category budgets
+      parameters:
+        - $ref: "#/components/parameters/Username"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetInput"
+      responses:
+        "200":
+          description: Updated budget
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudSpendUser"
+  /cloudspend/expenses:
+    get:
+      operationId: listCloudSpendExpenses
+      tags: [cloudspend]
+      summary: List expenses for a user
+      parameters:
+        - $ref: "#/components/parameters/UsernameQuery"
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Expense list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CloudSpendExpense"
+    post:
+      operationId: createCloudSpendExpense
+      tags: [cloudspend]
+      summary: Add an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudSpendExpense"
+  /cloudspend/expenses/{expenseId}:
+    patch:
+      operationId: updateCloudSpendExpense
+      tags: [cloudspend]
+      summary: Update an expense
+      parameters:
+        - $ref: "#/components/parameters/ExpenseId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseUpdate"
+      responses:
+        "200":
+          description: Updated expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudSpendExpense"
+    delete:
+      operationId: deleteCloudSpendExpense
+      tags: [cloudspend]
+      summary: Delete an expense
+      parameters:
+        - $ref: "#/components/parameters/ExpenseId"
+      responses:
+        "204":
+          description: Expense deleted
+  /cloudspend/dashboard/{username}:
+    get:
+      operationId: getCloudSpendDashboard
+      tags: [cloudspend]
+      summary: Get dashboard aggregates for a user
+      parameters:
+        - $ref: "#/components/parameters/Username"
+      responses:
+        "200":
+          description: Dashboard aggregates and recent expenses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardData"
+  /cloudspend/insights/{username}:
+    get:
+      operationId: getCloudSpendInsights
+      tags: [cloudspend]
+      summary: Get spending insights and forecasts for a user
+      parameters:
+        - $ref: "#/components/parameters/Username"
+      responses:
+        "200":
+          description: Spending patterns, recommendations, anomalies, and forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsightsData"
+components:
+  parameters:
+    Username:
+      name: username
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 2
+    UsernameQuery:
+      name: username
+      in: query
+      required: true
+      schema:
+        type: string
+        minLength: 2
+    ExpenseId:
+      name: expenseId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    CloudSpendUser:
+      type: object
+      required: [username, monthlyBudget, categoryBudgets]
+      properties:
+        username:
+          type: string
+        monthlyBudget:
+          type: number
+        categoryBudgets:
+          type: object
+          additionalProperties:
+            type: number
+    BudgetInput:
+      type: object
+      required: [monthlyBudget, categoryBudgets]
+      properties:
+        monthlyBudget:
+          type: number
+          minimum: 0
+        categoryBudgets:
+          type: object
+          additionalProperties:
+            type: number
+    CloudSpendExpense:
+      type: object
+      required: [id, username, amount, category, description, date, paymentMethod, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        amount:
+          type: number
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+        paymentMethod:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ExpenseInput:
+      type: object
+      required: [username, amount, category, description, date, paymentMethod]
+      properties:
+        username:
+          type: string
+          minLength: 2
+        amount:
+          type: number
+          exclusiveMinimum: 0
+        category:
+          type: string
+        description:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+        paymentMethod:
+          type: string
+    ExpenseUpdate:
+      type: object
+      properties:
+        amount:
+          type: number
+          exclusiveMinimum: 0
+        category:
+          type: string
+        description:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+        paymentMethod:
+          type: string
+    DashboardData:
+      type: object
+      required: [summary, monthComparison, categoryBreakdown, trend, recentExpenses, user]
+      properties:
+        summary:
+          type: object
+          required: [total, average, highest, count, monthSpend, lastMonthSpend]
+          properties:
+            total: { type: number }
+            average: { type: number }
+            highest: { type: number }
+            count: { type: integer }
+            monthSpend: { type: number }
+            lastMonthSpend: { type: number }
+        monthComparison:
+          type: number
+        categoryBreakdown:
+          type: array
+          items:
+            type: object
+            required: [category, amount]
+            properties:
+              category: { type: string }
+              amount: { type: number }
+        trend:
+          type: array
+          items:
+            type: object
+            required: [date, amount]
+            properties:
+              date: { type: string, format: date }
+              amount: { type: number }
+        recentExpenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/CloudSpendExpense"
+        user:
+          $ref: "#/components/schemas/CloudSpendUser"
+    InsightsData:
+      type: object
+      required: [patterns, recommendations, anomalies, forecast]
+      properties:
+        patterns:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsightPattern"
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsightRecommendation"
+        anomalies:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsightAnomaly"
+        forecast:
+          $ref: "#/components/schemas/ExpenseForecast"
+    InsightPattern:
+      type: object
+      required: [label, detail, value]
+      properties:
+        label: { type: string }
+        detail: { type: string }
+        value: { type: string }
+    InsightRecommendation:
+      type: object
+      required: [title, detail, impact]
+      properties:
+        title: { type: string }
+        detail: { type: string }
+        impact: { type: string }
+    InsightAnomaly:
+      type: object
+      required: [expenseId, description, amount, date, reason]
+      properties:
+        expenseId: { type: string }
+        description: { type: string }
+        amount: { type: number }
+        date: { type: string, format: date }
+        reason: { type: string }
+    ExpenseForecast:
+      type: object
+      required: [nextMonth, averageDaily, confidence, trend]
+      properties:
+        nextMonth: { type: number }
+        averageDaily: { type: number }
+        confidence: { type: string }
+        trend: { type: string }
+

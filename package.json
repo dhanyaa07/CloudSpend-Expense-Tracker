@@ -1,15 +1,11 @@
 {
-  "name": "@workspace/api-client-react",
+  "name": "@workspace/api-spec",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
+  "scripts": {
+    "codegen": "orval --config ./orval.config.ts && pnpm -w run typecheck:libs"
   },
-  "dependencies": {
-    "@tanstack/react-query": "catalog:"
-  },
-  "peerDependencies": {
-    "react": ">=18"
+  "devDependencies": {
+    "orval": "^8.23.0"
   }
 }
