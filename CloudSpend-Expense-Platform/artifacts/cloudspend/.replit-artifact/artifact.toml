@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "CloudSpend"
+description = "A polished personal cloud expense tracker with a dashboard, budgets, filters, and expense management for students, freelancers, and young professionals."
+version = "1.0.0"
+id = "artifacts/cloudspend"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21156
+
+[services.development]
+run = "pnpm --filter @workspace/cloudspend run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cloudspend", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/cloudspend/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21156"
+BASE_PATH = "/"

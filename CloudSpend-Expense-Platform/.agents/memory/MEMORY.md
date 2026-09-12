@@ -1,0 +1,1 @@
+- [CloudSpend AI fallback](ai-provider-fallback.md) — keep Copilot useful without a provider when managed AI setup is unavailable.
