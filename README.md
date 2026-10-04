@@ -1,4 +1,5 @@
-<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/d507bc26-00dc-41cf-ac6a-ad851ed1af18" /># ☁️ CloudSpend — AI-Powered Cloud Personal Finance Platform
+![Uploading image.png…]()
+☁️ CloudSpend — AI-Powered Cloud Personal Finance Platform
 
 **CloudSpend** is an **AI-powered, cloud-based personal finance management platform** designed to help users track expenses, manage budgets, understand spending behavior, receive personalized financial insights, and interact with their financial data through an AI Personal Finance Coach.
 
